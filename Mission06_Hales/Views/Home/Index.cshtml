@@ -2,7 +2,40 @@
     ViewData["Title"] = "The Joel Hilton Film Collection";
 }
 
+@model List<Movie>
+
 <div class="text-center">
     <h2>The Joel Hilton Film Collection</h2>
-    <img src=" ~ /img/download.jpg" alt="Joel's Film Collection">
+    <img src="~/img/download.jpg" alt="Joel's Film Collection">
 </div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Director</th>
+            <th>Rating</th>
+            <th>Edited</th>
+            <th>Copied To Plex</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                <td>@Html.DisplayFor(modelItem => item.Year)</td>
+                <td>@Html.DisplayFor(modelItem => item.Director)</td>
+                <td>@Html.DisplayFor(modelItem => item.Rating)</td>
+                <td>@Html.DisplayFor(modelItem => item.Edited)</td>
+                <td>@Html.DisplayFor(modelItem => item.CopiedToPlex)</td>
+                <td>
+                    <a asp-controller="Home" asp-action="Movie" asp-route-id="@item.MovieId" class="btn btn-primary">Edit</a>
+                    <a asp-controller="Home" asp-action="Delete" asp-route-id="@item.MovieId" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

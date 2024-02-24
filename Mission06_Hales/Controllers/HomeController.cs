@@ -1,49 +1,96 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Mission06_Hales.Models;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Mission06_Hales.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly JoelHiltonMovieCollectionContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(JoelHiltonMovieCollectionContext context)
         {
-            _logger = logger;
+            _context = context;
         }
-
+         
         public IActionResult Index()
         {
-            return View();
+            // Fetch and return the list of all movies
+            var movies = _context.Movies.Include(m => m.Category).ToList();
+            return View(movies);
         }
+
         public IActionResult About()
         {
             return View();
         }
-        public IActionResult Movie()
-        {
-            // Populate the Ratings dropdown list
-            ViewBag.Rating = new SelectList(new List<string>() { "G", "PG", "PG-13", "R" });
 
-            return View();
+        public IActionResult Movie(int? id)
+        {
+            // Example of fetching categories from the database
+            // Ensure you have a _context variable available in your controller that represents your database context
+            var categories = _context.Categories.Select(c => new { c.CategoryId, c.CategoryName }).ToList();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName");
+
+            ViewBag.Rating = new SelectList(new List<string>() { "G", "PG", "PG-13", "R" }); // Keep your existing Ratings dropdown preparation
+
+            if (id.HasValue)
+            {
+                var movie = _context.Movies.Find(id.Value);
+                if (movie == null)
+                {
+                    return NotFound();
+                }
+                return View(movie);
+            }
+
+            return View(new Movie());
         }
 
+
         [HttpPost]
-        public IActionResult Movie(MovieCollection movie)
+        public IActionResult Movie(Movie movie)
         {
             if (ModelState.IsValid)
             {
-                // Save the movie to the database
-                // Assuming you have a method to save the movie
+                if (movie.MovieId == 0)
+                {
+                    _context.Movies.Add(movie);
+                }
+                else
+                {
+                    _context.Movies.Update(movie);
+                }
 
-                return RedirectToAction("Index"); // Or wherever you want to redirect
+                _context.SaveChanges();
+                return RedirectToAction(nameof(Index));
             }
+            var categories = _context.Categories.Select(c => new { c.CategoryId, c.CategoryName }).ToList();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName");
 
-            // If we got this far, something failed, redisplay form
             ViewBag.Rating = new SelectList(new List<string>() { "G", "PG", "PG-13", "R" });
             return View(movie);
+        }
+
+        public IActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var movie = _context.Movies
+                .FirstOrDefault(m => m.MovieId == id);
+            if (movie != null)
+            {
+                _context.Movies.Remove(movie);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -51,6 +98,5 @@ namespace Mission06_Hales.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
     }
 }

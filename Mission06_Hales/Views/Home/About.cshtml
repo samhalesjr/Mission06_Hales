@@ -1,4 +1,4 @@
-﻿@model Mission06_Hales.Models.MovieCollection
+﻿@model Mission06_Hales.Models.Movie
 
 @{
     ViewData["Title"] = "Get to Know Joel";
@@ -14,7 +14,7 @@
         <h4>Movie</h4>
         <hr />
         @Html.ValidationSummary(true)
-        // Add form fields for each property in MovieCollection, e.g.:
+        // Add form fields for each property in Movie, e.g.:
         @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
         // Repeat for other fields like Category, Year, Director, etc.
         @Html.DropDownListFor(model => model.Rating, (SelectList)ViewBag.Rating, "Choose Rating", new { @class = "form-control" })
